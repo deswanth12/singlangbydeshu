@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sign Language Vision — NextGen HUD Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header class="navbar">
+        <div class="brand" id="brandLogo">
+            <div class="brand-logo-badge">🤟</div>
+            <div class="brand-text">
+                <span class="brand-title">SignLang AI Vision</span>
+                <span class="brand-subtitle">Real-Time Gesture Translator</span>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="status-pill">
+                <span class="pulse-dot"></span>
+                <span id="systemStatus">MediaPipe Ready (Dual-Hand)</span>
+            </div>
+            <button class="btn" id="btnSpeechToSign">🎙️ Speech-to-Sign</button>
+            <button class="btn" id="btnRecordCustom">🔴 Record Sign</button>
+            <button class="btn" id="btnDictionary">📖 Dictionary</button>
+            <button class="btn btn-pink" id="btnQuizGame">🎮 Quiz Game</button>
+        </div>
+    </header>
+
+    <!-- Main Grid Dashboard -->
+    <main class="main-grid">
+
+        <!-- Left Column: Video Feed & Sentence Builder -->
+        <section class="feed-section">
+            <div class="glass-panel feed-card">
+                <div class="feed-header">
+                    <div class="feed-title-wrap">
+                        <span>📷 Computer Vision Stream</span>
+                    </div>
+
+                    <!-- Theme, Flip Cam & FPS Badge -->
+                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                        <button class="btn" id="btnFlipCamera" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">🔄 Flip Cam</button>
+                        <select id="themeSelect" class="select-custom" style="padding: 0.25rem 0.5rem; font-size: 0.78rem;">
+                            <option value="CYBERPUNK">⚡ Cyberpunk Theme</option>
+                            <option value="MATRIX">🟢 Matrix Emerald</option>
+                            <option value="RAINBOW">🌈 Rainbow Flow</option>
+                            <option value="MINIMAL">✨ Minimal Nodes</option>
+                        </select>
+                        <span class="fps-badge" id="fpsDisplay">FPS: --</span>
+                    </div>
+                </div>
+
+
+                <div class="canvas-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="output_canvas" width="640" height="480"></canvas>
+
+                    <!-- Quiz Game HUD Overlay (Hidden by default) -->
+                    <div class="quiz-hud-panel" id="quizHudPanel" style="display: none;">
+                        <div>
+                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Perform Target Sign:</div>
+                            <div class="quiz-target-text" id="quizTargetText">Show "PEACE"</div>
+                        </div>
+
+                        <div class="quiz-stats">
+                            <div class="quiz-score-badge" id="quizScoreText">Score: 0 | Streak: 0</div>
+                            <div class="quiz-timer-badge" id="quizTimerText">⏳ 10s</div>
+                        </div>
+                    </div>
+
+                    <!-- Live HUD Overlay -->
+                    <div class="hud-overlay">
+                        <!-- Main Sign Badge -->
+                        <div class="hud-main-card">
+                            <div class="hud-label">Currently Translating</div>
+                            <div class="hud-sign-title" id="currentSignText">Waiting for hand...</div>
+                            <div class="hud-meta">
+                                <span class="hud-mode-tag" id="currentModeTag">✋ Single-Hand Mode</span>
+                            </div>
+                            <div class="hud-conf-bar-wrap">
+                                <div class="hud-conf-bar-fill" id="confBarFill"></div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Dual-Hand Finger Diagnostic Meters -->
+                        <div class="hud-diag-container" style="display: flex; gap: 0.6rem;">
+                            <!-- Left Hand Meters -->
+                            <div class="hud-diag-card">
+                                <div class="diag-title" style="color: var(--primary-cyan);">LEFT HAND</div>
+                                <div class="finger-bars">
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillThumbL" style="background: var(--primary-cyan);"></div></div>
+                                        <span class="finger-label">T</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillIndexL" style="background: var(--primary-cyan);"></div></div>
+                                        <span class="finger-label">I</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillMiddleL" style="background: var(--primary-cyan);"></div></div>
+                                        <span class="finger-label">M</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillRingL" style="background: var(--primary-cyan);"></div></div>
+                                        <span class="finger-label">R</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillPinkyL" style="background: var(--primary-cyan);"></div></div>
+                                        <span class="finger-label">P</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Hand Meters -->
+                            <div class="hud-diag-card">
+                                <div class="diag-title" style="color: var(--neon-pink);">RIGHT HAND</div>
+                                <div class="finger-bars">
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillThumbR" style="background: var(--neon-pink);"></div></div>
+                                        <span class="finger-label">T</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillIndexR" style="background: var(--neon-pink);"></div></div>
+                                        <span class="finger-label">I</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillMiddleR" style="background: var(--neon-pink);"></div></div>
+                                        <span class="finger-label">M</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillRingR" style="background: var(--neon-pink);"></div></div>
+                                        <span class="finger-label">R</span>
+                                    </div>
+                                    <div class="finger-indicator">
+                                        <div class="finger-bar"><div class="finger-fill" id="fFillPinkyR" style="background: var(--neon-pink);"></div></div>
+                                        <span class="finger-label">P</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Sentence Builder Bar -->
+            <div class="glass-panel sentence-card">
+                <div class="sentence-title-wrap">
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <span style="font-weight: 800; font-size: 1.05rem;">💬 Live Sentence Accumulator</span>
+                        <div class="soundwave" id="soundwaveAnim" style="display: none;">
+                            <div class="soundwave-bar"></div>
+                            <div class="soundwave-bar"></div>
+                            <div class="soundwave-bar"></div>
+                            <div class="soundwave-bar"></div>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Accumulates stable hand signs</span>
+                </div>
+
+                <div class="sentence-display-box" id="sentenceBuffer">
+                    <span style="color: var(--text-muted); font-size: 0.95rem; font-style: italic;">Perform gestures in front of the webcam to form words and sentences...</span>
+                </div>
+
+                <div class="sentence-actions">
+                    <button class="btn btn-cyan" id="btnSpeakSentence">🔊 Speak Sentence</button>
+                    <button class="btn" id="btnCopySentence">📋 Copy Text</button>
+                    <button class="btn" id="btnDownloadTxt">💾 Download .TXT</button>
+                    <button class="btn" id="btnShareWhatsApp">💬 WhatsApp</button>
+                    <button class="btn" id="btnAddSpace">➕ Space</button>
+                    <button class="btn" id="btnBackspace">⌫ Delete</button>
+                    <button class="btn" id="btnClearSentence">🗑️ Clear</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Controls, Log & Shortcuts -->
+        <aside class="sidebar-section">
+
+            <!-- Audio & Speech Controls Panel -->
+            <div class="glass-panel panel-card">
+                <div class="panel-header">
+                    <span class="panel-title">🔊 Audio Speech Engine</span>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <span class="form-label">Auto Speech Synthesis</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleTTS" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-row">
+                        <span class="form-label">Target Voice Language</span>
+                    </div>
+                    <select id="langSelect" class="select-custom">
+                        <option value="en">English (US/UK)</option>
+                        <option value="es">Spanish (Español)</option>
+                        <option value="fr">French (Français)</option>
+                        <option value="de">German (Deutsch)</option>
+                        <option value="hi">Hindi (हिंदी)</option>
+                        <option value="ja">Japanese (日本語)</option>
+                    </select>
+
+                    <div class="form-row" style="margin-top: 0.3rem;">
+                        <span class="form-label">Voice Selection</span>
+                    </div>
+                    <select id="voiceSelect" class="select-custom">
+                        <option value="">Default System Voice</option>
+                    </select>
+
+                    <div class="form-row">
+                        <span class="form-label">Speech Speed</span>
+                        <input type="range" id="speechRate" class="input-range" min="0.6" max="1.5" step="0.1" value="1.0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Translation History Panel -->
+            <div class="glass-panel panel-card">
+                <div class="panel-header">
+                    <span class="panel-title">📜 Sign Translation Timeline</span>
+                    <button class="btn" id="btnClearHistory" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">Clear Log</button>
+                </div>
+
+                <ul class="timeline-list" id="historyList">
+                    <li class="timeline-item" style="color: var(--text-muted);">No gestures translated yet</li>
+                </ul>
+            </div>
+
+            <!-- Shortcuts Guide -->
+            <div class="glass-panel panel-card" style="font-size: 0.82rem; color: var(--text-secondary);">
+                <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>⌨️ Keyboard Shortcuts</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div><kbd style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;">Space</kbd> Space</div>
+                    <div><kbd style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;">Backspace</kbd> Delete</div>
+                    <div><kbd style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;">S</kbd> Speak text</div>
+                    <div><kbd style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;">C</kbd> Clear all</div>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- Sign Dictionary Modal -->
+    <div class="modal-overlay" id="dictionaryModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary-cyan); display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📖 Sign Language Reference Dictionary</span>
+                </div>
+                <button class="btn" id="btnCloseDict" style="padding: 0.35rem 0.85rem;">✕ Close</button>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="category-tabs" id="categoryTabs">
+                <button class="tab-btn active" data-cat="ALL">All Signs</button>
+                <button class="tab-btn" data-cat="Conversational">Conversational</button>
+                <button class="tab-btn" data-cat="ASL Alphabet">ASL Alphabet</button>
+                <button class="tab-btn" data-cat="ASL Numbers">ASL Numbers</button>
+                <button class="tab-btn" data-cat="Dual-Hand">Dual-Hand</button>
+                <button class="tab-btn" data-cat="Custom">Custom Signs</button>
+            </div>
+
+            <div class="modal-grid" id="dictGrid">
+                <!-- Dynamic cards -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Reverse Speech-to-Sign Modal -->
+    <div class="modal-overlay" id="speechToSignModal">
+        <div class="modal-window" style="max-width: 650px;">
+            <div class="modal-header">
+                <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary-cyan);">🎙️ Speech-to-Sign Visualizer</div>
+                <button class="btn" id="btnCloseSpeechToSign">✕ Close</button>
+            </div>
+            <div class="speech-vis-modal">
+                <div class="mic-pulse-btn" id="micBtn">🎙️</div>
+                <div style="font-size: 0.95rem; color: var(--text-secondary);" id="speechVisStatus">Click mic to start speaking...</div>
+                <div class="sign-flashcard-grid" id="speechFlashcardGrid">
+                    <!-- Dynamic sign cards -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Gesture Recorder Modal -->
+    <div class="modal-overlay" id="recordCustomModal">
+        <div class="modal-window" style="max-width: 550px;">
+            <div class="modal-header">
+                <div style="font-weight: 800; font-size: 1.2rem; color: var(--neon-pink);">🔴 Record Custom Sign</div>
+                <button class="btn" id="btnCloseRecordCustom">✕ Close</button>
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                <div class="form-group">
+                    <span class="form-label">Gesture Name / Word</span>
+                    <input type="text" id="customSignName" class="select-custom" placeholder="e.g. My Name / Water / Coffee">
+                </div>
+                <div class="form-group">
+                    <span class="form-label">Short Description / Tip</span>
+                    <input type="text" id="customSignTip" class="select-custom" placeholder="e.g. Hold 3 fingers flat forward">
+                </div>
+                <button class="btn btn-pink" id="btnStartRecording" style="margin-top: 0.5rem; justify-content: center;">🔴 Capture Landmark Frame</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- MediaPipe JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <!-- Client Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>
+
