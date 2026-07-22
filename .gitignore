@@ -40,3 +40,5 @@ venv.bak/
 
 # Project specific
 custom_signs.json
+database.db
+

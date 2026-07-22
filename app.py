@@ -4,6 +4,7 @@ import os
 import numpy as np
 from flask import Flask, render_template, request, jsonify
 from gestures import classify_static, get_gesture_dictionary
+import database as db
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
@@ -40,7 +41,8 @@ def index():
 @app.route('/classify', methods=['POST'])
 def classify():
     """
-    Receives landmark data for 1 or 2 hands, classifies it against built-in and custom signs.
+    Receives landmark data for 1 or 2 hands, classifies it using ML Model,
+    and logs recognized signs into SQLite database.
     """
     data = request.get_json()
     if not data or 'landmarks' not in data:
@@ -53,6 +55,7 @@ def classify():
         return jsonify({'label': None, 'text': None})
 
     session_stats['classifications_count'] += 1
+    hand_mode = 'Dual-Hand' if (isinstance(raw_landmarks[0][0], list) and len(raw_landmarks) > 1) else 'Single-Hand'
 
     if isinstance(raw_landmarks[0][0], list):
         label, text = classify_static(raw_landmarks, handedness)
@@ -61,6 +64,11 @@ def classify():
 
     if label:
         session_stats['unique_gestures_seen'].add(label)
+        # Log recognized sign to SQLite DB
+        try:
+            db.record_translation(text or label, confidence=0.90, hand_mode=hand_mode)
+        except Exception as err:
+            print(f"DB Logging Error: {err}")
 
     return jsonify({
         'label': label,
@@ -104,6 +112,33 @@ def save_custom_sign():
     return jsonify({'status': 'success', 'sign': new_sign})
 
 
+@app.route('/api/history', methods=['GET', 'DELETE'])
+def history_endpoint():
+    """GET returns persistent translation history from SQLite DB; DELETE clears history."""
+    if request.method == 'DELETE':
+        db.clear_history()
+        return jsonify({'status': 'cleared'})
+    
+    logs = db.get_translation_history(limit=50)
+    return jsonify({'history': logs})
+
+
+@app.route('/api/practice', methods=['GET', 'POST'])
+def practice_endpoint():
+    """POST records quiz practice match; GET returns practice history."""
+    if request.method == 'POST':
+        data = request.get_json() or {}
+        target = data.get('target_sign', 'Unknown')
+        matched = data.get('matched_sign', 'Unknown')
+        score = data.get('score', 0)
+        streak = data.get('streak', 0)
+        db.record_practice_session(target, matched, score, streak)
+        return jsonify({'status': 'recorded'})
+
+    logs = db.get_practice_history(limit=50)
+    return jsonify({'practice_history': logs})
+
+
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     uptime = int(time.time() - session_stats['start_time'])
@@ -116,4 +151,5 @@ def get_stats():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
 

@@ -55,15 +55,26 @@ def extract_hand_state(lm3d):
     }
 
 
+from ml_classifier import classify_with_ml
+
+
 def classify_single_hand(lm3d):
     """
-    High-accuracy fuzzy scoring classifier for single-hand gestures.
-    Matches features against candidate templates and returns (label, text, score).
+    Classifies single-hand gestures using ML Model predictions first, falling back to candidate templates.
     """
+    # 1. Machine Learning Model Inference
+    try:
+        ml_label, ml_text, ml_conf = classify_with_ml(lm3d)
+        if ml_label and ml_conf >= 0.45:
+            return ml_label, ml_text, ml_conf
+    except Exception as e:
+        pass
+
     s = extract_hand_state(lm3d)
     lm = s['lm']
 
     candidates = []
+
 
     # --- OPEN PALM ("Hello") ---
     if s['ext_count'] >= 4:

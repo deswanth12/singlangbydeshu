@@ -1,6 +1,10 @@
-opencv-python
-mediapipe>=0.10.0
-numpy
-pyttsx3
-Flask
-
+Flask==3.0.3
+mediapipe==0.10.14
+opencv-python==4.10.0.84
+numpy==1.26.4
+scikit-learn==1.5.1
+joblib==1.4.2
+pyttsx3==2.90
+pytest==8.2.2
+gunicorn==22.0.0
+python-dotenv==1.0.1

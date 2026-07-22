@@ -54,6 +54,10 @@ class TemporalSmoother:
         self.last_added_gesture = None
         self.stable_counter = 0
 
+    def reset(self):
+        self.clear()
+
+
     def get_sentence_text(self):
         return " ".join(self.sentence)
 
