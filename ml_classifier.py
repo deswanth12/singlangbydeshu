@@ -1,7 +1,14 @@
 import os
-import joblib
 import numpy as np
-from train_model import MODEL_PATH, extract_feature_vector
+
+try:
+    import joblib
+    from train_model import MODEL_PATH, extract_feature_vector
+    HAS_ML = True
+except ImportError:
+    HAS_ML = False
+    MODEL_PATH = os.path.join('model', 'gesture_classifier.joblib')
+
 
 LABEL_DISPLAY_MAP = {
     "OPEN_PALM": ("HELLO", "Hello"),
@@ -39,8 +46,9 @@ class MLGestureClassifier:
         Predicts gesture label and confidence from (21, 3) landmarks using trained ML model.
         Returns: (internal_label, display_text, confidence_score)
         """
-        if self.model is None:
+        if not HAS_ML or self.model is None:
             return None, None, 0.0
+
 
         try:
             features = extract_feature_vector(lm3d).reshape(1, -1)
