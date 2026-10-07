@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
-from utils import get_finger_extension_ratio, angle_3d, euclidean_dist, TemporalSmoother
+import pytest
+
+from utils import TemporalSmoother, angle_3d, euclidean_dist, get_finger_extension_ratio
 
 
 def test_euclidean_dist():

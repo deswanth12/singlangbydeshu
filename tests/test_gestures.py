@@ -1,8 +1,8 @@
-import pytest
 import numpy as np
-from gestures import classify_static, classify_single_hand
-from ml_classifier import classify_with_ml, MLGestureClassifier
-from train_model import generate_synthetic_landmarks, extract_feature_vector
+
+from gestures import classify_static
+from ml_classifier import MLGestureClassifier, classify_with_ml
+from train_model import extract_feature_vector, generate_synthetic_landmarks
 
 
 def test_feature_vector_extraction():
@@ -21,7 +21,7 @@ def test_ml_prediction_open_palm():
     for feat in samples:
         # Reconstruct landmark array from flat coords
         lm3d = feat[:63].reshape(21, 3)
-        label, text, conf = classify_with_ml(lm3d)
+        label, _text, conf = classify_with_ml(lm3d)
         assert label is not None
         assert conf > 0.35
 

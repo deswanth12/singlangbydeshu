@@ -1,6 +1,7 @@
 # 🤟 SignLang AI Vision — Real-Time Sign Language Translator
 
 ![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)
+[![CI](https://github.com/deswanth12/singlangbydeshu/actions/workflows/ci.yml/badge.svg)](https://github.com/deswanth12/singlangbydeshu/actions/workflows/ci.yml)
 ![Flask](https://img.shields.io/badge/Flask-Web%20Framework-green.svg)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-Computer%20Vision-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-purple.svg)
