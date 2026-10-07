@@ -1,8 +1,13 @@
-import sqlite3
-import time
 import os
+import sqlite3
 
-DB_PATH = 'database.db'
+DB_PATH = os.environ.get('SINGLANG_DB_PATH', 'database.db')
+
+
+def set_db_path(path):
+    """Dynamically set the database path (useful for testing isolation)."""
+    global DB_PATH
+    DB_PATH = path
 
 
 def get_connection():
